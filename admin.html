@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Бронирование — админка «Престиж»</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--ink:#0C2731;--petrol:#123C4D;--bone:#F3F1EB;--wood:#8A6D4B;--brass:#C39A57;
+ --red:#e23b3b;--red-soft:#f6d5d5;--line:rgba(26,33,36,.14);--txt:#1A2124;--mut:#6a706c;
+ --serif:Georgia,'Times New Roman',serif;--sans:system-ui,'Segoe UI',Roboto,Arial,sans-serif}
+body{font-family:var(--sans);background:var(--bone);color:var(--txt);line-height:1.5}
+.top{background:var(--ink);color:#F1EDE4;padding:14px 0}
+.wrap{max-width:1280px;margin:0 auto;padding:0 20px}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.top h1{font-family:var(--serif);font-weight:400;font-size:20px;letter-spacing:.02em}
+.top .sub{font-size:12px;color:rgba(241,237,228,.6)}
+.store{font-size:12px;color:rgba(241,237,228,.75);display:flex;align-items:center;gap:7px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--brass)}
+
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--line);margin-top:22px}
+.tab{padding:12px 22px;border:0;background:transparent;font:inherit;font-size:15px;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent}
+.tab.on{color:var(--txt);border-bottom-color:var(--wood);font-weight:600}
+
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:20px 0 6px}
+.btn{font:inherit;font-size:14px;padding:10px 18px;border-radius:3px;border:1px solid transparent;cursor:pointer;transition:.15s}
+.btn-p{background:var(--wood);color:#fff}.btn-p:hover{background:#755c3f}
+.btn-o{background:#fff;color:var(--txt);border-color:var(--line)}.btn-o:hover{border-color:var(--wood)}
+.btn-d{background:#fff;color:var(--red);border-color:#f0c9c9}.btn-d:hover{background:#fff5f5}
+.hint{font-size:12.5px;color:var(--mut);margin-left:auto}
+
+.months{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:18px}
+.m{background:#fff;border:1px solid var(--line);border-radius:5px;padding:14px 14px 16px}
+.m h3{font-family:var(--serif);font-weight:400;font-size:15px;text-align:center;margin-bottom:10px}
+.dow,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.dow span{text-align:center;font-size:11px;color:var(--mut);padding:2px 0}
+.dow span.we{color:var(--red)}
+.days b{font-weight:400;text-align:center;font-size:12.5px;padding:6px 0;border-radius:3px;background:#f6f6f4;color:var(--txt);position:relative}
+.days b.pad{background:transparent}
+.days b.we{color:var(--red)}
+.days b.busy{background:var(--red);color:#fff;cursor:help}
+.days b.today{outline:2px solid var(--brass);outline-offset:-2px}
+
+table{width:100%;border-collapse:collapse;margin-top:14px;background:#fff;border:1px solid var(--line);border-radius:5px;overflow:hidden}
+th,td{text-align:left;padding:11px 13px;border-bottom:1px solid var(--line);font-size:13.5px;vertical-align:top}
+th{background:#faf9f6;font-weight:600;font-size:12px;letter-spacing:.03em;text-transform:uppercase;color:var(--mut)}
+tr:last-child td{border-bottom:0}
+td.num{white-space:nowrap;font-variant-numeric:tabular-nums}
+.del{background:none;border:0;color:var(--red);cursor:pointer;font:inherit;font-size:13px;padding:0}
+.del:hover{text-decoration:underline}
+.empty{padding:26px;text-align:center;color:var(--mut);font-size:14px;background:#fff;border:1px dashed var(--line);border-radius:5px;margin-top:14px}
+
+.ov{position:fixed;inset:0;background:rgba(12,26,32,.55);display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto;z-index:50}
+.ov.on{display:flex}
+.modal{background:#fff;border-radius:6px;width:100%;max-width:640px;padding:26px 28px 24px;box-shadow:0 24px 60px rgba(0,0,0,.25)}
+.modal h2{font-family:var(--serif);font-weight:400;font-size:21px;margin-bottom:20px}
+.f{margin-bottom:14px}
+.f label{display:block;font-size:13px;color:var(--mut);margin-bottom:5px}
+.f input,.f textarea{width:100%;font:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:3px;background:#fff;color:var(--txt)}
+.f input:focus,.f textarea:focus{outline:none;border-color:var(--wood)}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:560px){.f2{grid-template-columns:1fr}}
+.req{color:var(--red)}
+.mact{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.err{color:var(--red);font-size:13px;margin-top:10px;display:none}
+.err.on{display:block}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="wrap">
+    <div>
+      <h1>Бронирование · Гостевой комплекс «Престиж»</h1>
+      <div class="sub">Ручной ввод занятых дат. Красным отмечены занятые дни.</div>
+    </div>
+    <div class="store"><span class="dot"></span><span id="storeInfo">…</span></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="tabs" id="tabs"></div>
+
+  <div class="bar">
+    <button class="btn btn-p" id="addBtn">+ Добавить бронь</button>
+    <button class="btn btn-o" id="expBtn">Скачать JSON</button>
+    <button class="btn btn-o" id="impBtn">Загрузить JSON</button>
+    <input type="file" id="impFile" accept="application/json" hidden>
+    <button class="btn btn-d" id="clrBtn">Удалить все</button>
+    <span class="hint" id="cnt"></span>
+  </div>
+
+  <div class="months" id="months"></div>
+
+  <h2 style="font-family:var(--serif);font-weight:400;font-size:18px;margin-top:30px">Список броней</h2>
+  <div id="listWrap"></div>
+  <div style="height:50px"></div>
+</div>
+
+<div class="ov" id="ov">
+  <form class="modal" id="form">
+    <h2 id="mTitle">Новая бронь</h2>
+    <div class="f2">
+      <div class="f"><label>Дата въезда <span class="req">*</span></label><input type="date" id="fStart" required></div>
+      <div class="f"><label>Дата выезда <span class="req">*</span></label><input type="date" id="fEnd" required></div>
+    </div>
+    <div class="f"><label>ФИО</label><input type="text" id="fFio" placeholder="Иванов Иван"></div>
+    <div class="f2">
+      <div class="f"><label>Телефон</label><input type="tel" id="fPhone" placeholder="+7 999 000-00-00"></div>
+      <div class="f"><label>E-mail</label><input type="email" id="fMail" placeholder="mail@example.ru"></div>
+    </div>
+    <div class="f"><label>Комментарий</label><textarea id="fNote" rows="3" placeholder="Примечания и пожелания"></textarea></div>
+    <div class="err" id="err"></div>
+    <div class="mact">
+      <button type="button" class="btn btn-o" id="cancelBtn">Отмена</button>
+      <button type="submit" class="btn btn-p">Сохранить</button>
+    </div>
+  </form>
+</div>
+
+<script>
+var HOUSES=[{key:'provans',name:'Коттедж «Прованс»'},{key:'konyak',name:'Коттедж «Коньяк»'}];
+var MON=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+var DOW=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+var KEY='elitrest_bookings_v1', API='api.php';
+var data={provans:[],konyak:[]}, cur='provans', useApi=false;
+
+function pad(n){return n<10?'0'+n:''+n}
+function iso(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function ru(s){var p=s.split('-');return p[2]+'.'+p[1]+'.'+p[0]}
+function parse(s){var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2])}
+
+function load(){
+  fetch(API,{cache:'no-store'}).then(function(r){return r.ok?r.json():Promise.reject()}).then(function(j){
+    if(j&&j.provans){data=j;useApi=true;info('Сервер (api.php)')}else throw 0;
+    render();
+  }).catch(function(){
+    try{var s=localStorage.getItem(KEY);if(s)data=JSON.parse(s)}catch(e){}
+    info('Этот браузер (localStorage)');render();
+  });
+}
+function save(){
+  if(useApi){
+    fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
+      .catch(function(){alert('Не удалось сохранить на сервере')});
+  }
+  try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}
+}
+function info(t){document.getElementById('storeInfo').textContent='Хранилище: '+t}
+
+function busyMap(){
+  var m={};
+  (data[cur]||[]).forEach(function(b){
+    var d=parse(b.start), e=parse(b.end);
+    while(d<=e){ m[iso(d)]=(m[iso(d)]||[]).concat([b]); d.setDate(d.getDate()+1) }
+  });
+  return m;
+}
+function renderTabs(){
+  var t=document.getElementById('tabs');t.innerHTML='';
+  HOUSES.forEach(function(h){
+    var b=document.createElement('button');b.className='tab'+(h.key===cur?' on':'');b.textContent=h.name;
+    b.onclick=function(){cur=h.key;render()};t.appendChild(b);
+  });
+}
+function renderMonths(){
+  var box=document.getElementById('months');box.innerHTML='';
+  var busy=busyMap(), now=new Date(), today=iso(now);
+  for(var i=0;i<12;i++){
+    var y=now.getFullYear(), mo=now.getMonth()+i;
+    var dt=new Date(y,mo,1), Y=dt.getFullYear(), M=dt.getMonth();
+    var el=document.createElement('div');el.className='m';
+    var h='<h3>'+MON[M]+' '+Y+'</h3><div class="dow">';
+    DOW.forEach(function(d,j){h+='<span class="'+(j>4?'we':'')+'">'+d+'</span>'});
+    h+='</div><div class="days">';
+    var first=new Date(Y,M,1), shift=(first.getDay()+6)%7, last=new Date(Y,M+1,0).getDate();
+    for(var s=0;s<shift;s++) h+='<b class="pad"></b>';
+    for(var d=1;d<=last;d++){
+      var key=Y+'-'+pad(M+1)+'-'+pad(d), wd=(new Date(Y,M,d).getDay()+6)%7;
+      var cls=(wd>4?'we ':'')+(busy[key]?'busy ':'')+(key===today?'today':'');
+      var tip=busy[key]?(' title="'+busy[key].map(function(b){return (b.fio||'Бронь')+' · '+ru(b.start)+'–'+ru(b.end)}).join(' | ').replace(/"/g,'')+'"'):'';
+      h+='<b class="'+cls+'"'+tip+'>'+d+'</b>';
+    }
+    h+='</div>';el.innerHTML=h;box.appendChild(el);
+  }
+}
+function renderList(){
+  var w=document.getElementById('listWrap'), rows=(data[cur]||[]).slice().sort(function(a,b){return a.start<b.start?-1:1});
+  document.getElementById('cnt').textContent='Броней: '+rows.length;
+  if(!rows.length){w.innerHTML='<div class="empty">Броней пока нет. Нажмите «+ Добавить бронь».</div>';return}
+  var h='<table><tr><th>Заезд</th><th>Выезд</th><th>ФИО</th><th>Телефон</th><th>E-mail</th><th>Комментарий</th><th></th></tr>';
+  rows.forEach(function(b){
+    var idx=(data[cur]||[]).indexOf(b);
+    h+='<tr><td class="num">'+ru(b.start)+'</td><td class="num">'+ru(b.end)+'</td><td>'+esc(b.fio)+'</td><td class="num">'+esc(b.phone)+'</td><td>'+esc(b.email)+'</td><td>'+esc(b.note)+'</td>'+
+       '<td><button class="del" data-i="'+idx+'">Удалить</button></td></tr>';
+  });
+  w.innerHTML=h+'</table>';
+  w.querySelectorAll('.del').forEach(function(b){b.onclick=function(){
+    if(confirm('Удалить бронь?')){data[cur].splice(+b.getAttribute('data-i'),1);save();render()}
+  }});
+}
+function esc(s){return (s||'').replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function render(){renderTabs();renderMonths();renderList()}
+
+var ov=document.getElementById('ov');
+function openM(){document.getElementById('form').reset();document.getElementById('err').classList.remove('on');
+  document.getElementById('mTitle').textContent='Новая бронь · '+HOUSES.filter(function(h){return h.key===cur})[0].name;
+  ov.classList.add('on');document.getElementById('fStart').focus()}
+function closeM(){ov.classList.remove('on')}
+document.getElementById('addBtn').onclick=openM;
+document.getElementById('cancelBtn').onclick=closeM;
+ov.onclick=function(e){if(e.target===ov)closeM()};
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeM()});
+
+document.getElementById('form').onsubmit=function(e){
+  e.preventDefault();
+  var s=document.getElementById('fStart').value, en=document.getElementById('fEnd').value, err=document.getElementById('err');
+  if(!s||!en){err.textContent='Укажите даты заезда и выезда.';err.classList.add('on');return}
+  if(en<s){err.textContent='Дата выезда раньше даты заезда.';err.classList.add('on');return}
+  data[cur]=data[cur]||[];
+  data[cur].push({start:s,end:en,fio:document.getElementById('fFio').value,phone:document.getElementById('fPhone').value,
+                  email:document.getElementById('fMail').value,note:document.getElementById('fNote').value});
+  save();closeM();render();
+};
+
+document.getElementById('expBtn').onclick=function(){
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='bookings.json';a.click();
+};
+document.getElementById('impBtn').onclick=function(){document.getElementById('impFile').click()};
+document.getElementById('impFile').onchange=function(e){
+  var f=e.target.files[0];if(!f)return;var r=new FileReader();
+  r.onload=function(){try{var j=JSON.parse(r.result);if(!j.provans&&!j.konyak)throw 0;data=j;save();render();alert('Загружено')}catch(x){alert('Файл не похож на bookings.json')}};
+  r.readAsText(f);
+};
+document.getElementById('clrBtn').onclick=function(){
+  if(confirm('Удалить ВСЕ брони по коттеджу «'+HOUSES.filter(function(h){return h.key===cur})[0].name+'»?')){data[cur]=[];save();render()}
+};
+
+load();
+</script>
+</body>
+</html>

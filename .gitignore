@@ -1,6 +1,8 @@
 build_houses.py
 house-template.html
 patch_index.py
+api.php
+bookings.json
 __pycache__/
 provans.zip
 provans_hi/
