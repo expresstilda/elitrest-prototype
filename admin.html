@@ -140,10 +140,20 @@ function load(){
     info('Этот браузер (localStorage)');render();
   });
 }
+var PASS_KEY='elitrest_admin_pass';
+function getPass(force){
+  var p=localStorage.getItem(PASS_KEY);
+  if(!p||force){ p=prompt('Пароль администратора (задан в api.php):',''); if(p) localStorage.setItem(PASS_KEY,p); }
+  return p||'';
+}
 function save(){
   if(useApi){
-    fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
-      .catch(function(){alert('Не удалось сохранить на сервере')});
+    fetch(API,{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Pass':getPass()},body:JSON.stringify(data)})
+      .then(function(r){
+        if(r.status===403){ getPass(true); alert('Неверный пароль. Введите заново и повторите последнее действие.'); }
+        else if(!r.ok){ alert('Сервер не сохранил данные (код '+r.status+')'); }
+      })
+      .catch(function(){ alert('Не удалось связаться с сервером. Данные сохранены только в этом браузере.') });
   }
   try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}
 }
